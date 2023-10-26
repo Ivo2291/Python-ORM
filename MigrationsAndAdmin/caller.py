@@ -1,4 +1,6 @@
 import os
+from datetime import timedelta
+
 import django
 
 # Set up Django
@@ -6,9 +8,8 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "orm_skeleton.settings")
 django.setup()
 
 # Import your models
-from main_app.models import Person
+from main_app.models import Order
 
-print(Person._meta.get_field('age_group').default)
 
 # Create and check models
 # def add_initial_products():
