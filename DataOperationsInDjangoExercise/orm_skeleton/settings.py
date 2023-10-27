@@ -78,14 +78,34 @@ WSGI_APPLICATION = 'orm_skeleton.wsgi.application'
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "data_operations_db",
-        "USER": "Ivo",
-        "PASSWORD": "DockerPass6463",
+        "NAME": "",
+        "USER": "",
+        "PASSWORD": "",
         "HOST": "127.0.0.1",
         "PORT": "5432",
     }
 }
 
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'DEBUG',  # Other levels CRITICAL, ERROR, WARNING, INFO, DEBUG
+    },
+    'loggers': {
+        'django.db.backends': {  # responsible for the sql logs
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+    },
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators

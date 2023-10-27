@@ -7,11 +7,10 @@ import django
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "orm_skeleton.settings")
 django.setup()
 
-from main_app.models import Pet, Artifact, Location, Car, Task
+from main_app.models import Pet, Artifact, Location, Car, Task, HotelRoom
 
 
 # 01. Pet task
-
 def create_pet(name: str, species: str):
     Pet.objects.create(name=name, species=species)
 
@@ -19,7 +18,6 @@ def create_pet(name: str, species: str):
 
 
 # 02. Artifact task
-
 def create_artifact(name: str, origin: str, age: int, description: str, is_magical: bool):
     artefact_to_create = Artifact(
         name=name,
@@ -39,7 +37,6 @@ def delete_all_artifacts():
 
 
 # 03. Locations task
-
 # def make_new_location(name: str, region: str, population: int, description: str, is_capital: bool):
 #     Location.objects.create(
 #         name=name,
@@ -80,7 +77,6 @@ def delete_first_location():
 
 
 # 04. Car task
-
 # def add_car(model: str, year: int, color: str, price: float):
 #     Car.objects.create(
 #         model=model,
@@ -109,7 +105,6 @@ def delete_last_car():
 
 
 # 05. Task task
-
 def add_new_task(title: str, description: str, due_date: str):
     Task.objects.create(
         title=title,
@@ -140,6 +135,49 @@ def complete_odd_tasks():
 
 
 def encode_and_replace(text: str, task_title: str):
-    encoded_text = ''.join([chr(ord(char) - 3) for char in text])
+    encoded_text = ''.join(chr(ord(char) - 3) for char in text)
 
     Task.objects.all().filter(title=task_title).update(description=encoded_text)
+
+
+# 06. Hotel Room task
+def get_deluxe_rooms():
+    deluxe_rooms = HotelRoom.objects.filter(room_type='Deluxe')
+    deluxe_rooms_list = []
+
+    for room in deluxe_rooms:
+        if room.id % 2 == 0:
+            deluxe_rooms_list.append(
+                str(room)
+            )
+
+    return '\n'.join(deluxe_rooms_list)
+
+
+def increase_room_capacity():
+    rooms = HotelRoom.objects.all()
+
+    for i in range(len(rooms)):
+        if not rooms[i].is_reserved:
+            continue
+        if len(rooms) == 1 or i == 0:
+            rooms[i].capacity += rooms[i].id
+        else:
+            rooms[i].capacity += rooms[i - 1].capacity
+
+    HotelRoom.objects.bulk_update(rooms, ['capacity'])
+
+
+def reserve_first_room():
+    first_room = HotelRoom.objects.first()
+
+    if not first_room.is_reserved:
+        first_room.is_reserved = True
+        first_room.save()
+
+
+def delete_last_room():
+    last_room = HotelRoom.objects.last()
+
+    if last_room.is_reserved:
+        last_room.delete()
