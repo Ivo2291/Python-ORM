@@ -2,15 +2,17 @@ import os
 from datetime import datetime
 
 import django
+from django.db.models import Case, When, Value, F, IntegerField, CharField, Q
 
 # Set up Django
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "orm_skeleton.settings")
 django.setup()
 
-from main_app.models import Pet, Artifact, Location, Car, Task, HotelRoom
+from main_app.models import Pet, Artifact, Location, Car, Task, HotelRoom, Character
 
 
 # 01. Pet task
+# ------------
 def create_pet(name: str, species: str):
     Pet.objects.create(name=name, species=species)
 
@@ -18,6 +20,7 @@ def create_pet(name: str, species: str):
 
 
 # 02. Artifact task
+# -----------------
 def create_artifact(name: str, origin: str, age: int, description: str, is_magical: bool):
     artefact_to_create = Artifact(
         name=name,
@@ -37,14 +40,15 @@ def delete_all_artifacts():
 
 
 # 03. Locations task
-# def make_new_location(name: str, region: str, population: int, description: str, is_capital: bool):
-#     Location.objects.create(
-#         name=name,
-#         region=region,
-#         population=population,
-#         description=description,
-#         is_capital=is_capital
-#     )
+# ------------------
+def make_new_location(name: str, region: str, population: int, description: str, is_capital: bool):
+    Location.objects.create(
+        name=name,
+        region=region,
+        population=population,
+        description=description,
+        is_capital=is_capital
+    )
 
 
 def show_all_locations():
@@ -59,7 +63,7 @@ def show_all_locations():
 
 
 def new_capital():
-    # Location.objects.filter(pk=1).update(is_capital=True) --> Faster solution
+    # Location.objects.filter(pk=1).update(is_capital=True) --> Faster solution, but we must be sure there is id 1
 
     location = Location.objects.first()
     location.is_capital = True
@@ -77,13 +81,16 @@ def delete_first_location():
 
 
 # 04. Car task
-# def add_car(model: str, year: int, color: str, price: float):
-#     Car.objects.create(
-#         model=model,
-#         year=year,
-#         color=color,
-#         price=price
-#     )
+# ------------
+def add_car(model: str, year: int, color: str, price: float):
+    Car.objects.create(
+        model=model,
+        year=year,
+        color=color,
+        price=price
+    )
+
+
 def apply_discount():
     cars = Car.objects.all()
 
@@ -105,6 +112,7 @@ def delete_last_car():
 
 
 # 05. Task task
+# -------------
 def add_new_task(title: str, description: str, due_date: str):
     Task.objects.create(
         title=title,
@@ -141,6 +149,7 @@ def encode_and_replace(text: str, task_title: str):
 
 
 # 06. Hotel Room task
+# -------------------
 def get_deluxe_rooms():
     deluxe_rooms = HotelRoom.objects.filter(room_type='Deluxe')
     deluxe_rooms_list = []
@@ -181,3 +190,84 @@ def delete_last_room():
 
     if last_room.is_reserved:
         last_room.delete()
+
+
+# 07. Character
+# -------------
+def update_characters():
+    Character.objects.update(
+        level=Case(
+            When(class_name='Mage', then=F('level') + 3),
+            default=F('level'),
+            output_field=IntegerField(),
+        ),
+
+        intelligence=Case(
+            When(class_name='Mage', then=F('intelligence') - 7),
+            default=F('intelligence'),
+            output_field=IntegerField(),
+        ),
+
+        hit_points=Case(
+            When(class_name='Warrior', then=F('hit_points') / 2),
+            default=F('hit_points'),
+            output_field=IntegerField(),
+        ),
+
+        dexterity=Case(
+            When(class_name='Warrior', then=F('dexterity') + 4),
+            default=F('dexterity'),
+            output_field=IntegerField(),
+        ),
+
+        inventory=Case(
+            When(class_name__in=['Assassin', 'Scout'], then=Value('The inventory is empty')),
+            default=F('inventory'),
+            output_field=CharField()
+        )
+    )
+
+
+def fuse_characters(first_character: Character, second_character: Character):
+    name = f"{first_character.name} {second_character.name}"
+    class_name = 'Fusion'
+    level = (first_character.level + second_character.level) // 2
+    strength = (first_character.strength + second_character.strength) * 1.2
+    dexterity = (first_character.dexterity + second_character.dexterity) * 1.4
+    intelligence = (first_character.intelligence + second_character.intelligence) * 1.5
+    hit_points = (first_character.hit_points + second_character.hit_points)
+
+    if first_character.class_name in ['Mage', 'Scout']:
+        inventory = 'Bow of the Elven Lords, Amulet of Eternal Wisdom'
+    else:
+        inventory = 'Dragon Scale Armor, Excalibur'
+
+    Character.objects.create(
+        name=name,
+        class_name=class_name,
+        level=level,
+        strength=strength,
+        dexterity=dexterity,
+        intelligence=intelligence,
+        hit_points=hit_points,
+        inventory=inventory
+    )
+
+    first_character.delete()
+    second_character.delete()
+
+
+def grand_dexterity():
+    Character.objects.update(dexterity=30)
+
+
+def grand_intelligence():
+    Character.objects.update(intelligence=40)
+
+
+def grand_strength():
+    Character.objects.update(strength=50)
+
+
+def delete_characters():
+    Character.objects.filter(inventory='The inventory is empty').delete()
