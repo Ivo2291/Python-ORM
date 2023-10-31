@@ -142,4 +142,22 @@ def filter_authors_by_nationalities(nationality: str):
 
 # 06. Filter Authors by Birth Year
 # --------------------------------
+def filter_authors_by_birth_year(first_year: int, second_year: int):
+    authors = [
+        f"{author.birth_date}: {author.first_name} {author.last_name}"
+        for author in Author.objects.filter(
+            birth_date__year__range=(first_year, second_year)
+        ).order_by('-birth_date')
+    ]
 
+    return '\n'.join(authors)
+
+
+# 07. Change Reviewer's Name
+# -------------------------
+def change_reviewer_name(reviewer_old_name: str, reviewer_new_name: str):
+    Review.objects.filter(
+        reviewer_name__iexact=reviewer_old_name
+    ).update(reviewer_name=reviewer_new_name)
+
+    return Review.objects.all()
