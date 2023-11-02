@@ -77,10 +77,10 @@ WSGI_APPLICATION = 'orm_skeleton.wsgi.application'
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": "django_models_relations_db",
+        "ENGINE": "",
+        "NAME": "",
         "USER": "Ivo",
-        "PASSWORD": "DockerPass6463",
+        "PASSWORD": "",
         "HOST": "127.0.0.1",
         "PORT": "5432",
     }
