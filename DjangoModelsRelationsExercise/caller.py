@@ -5,7 +5,7 @@ import django
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "orm_skeleton.settings")
 django.setup()
 
-from main_app.models import Author, Book, Artist, Song
+from main_app.models import Author, Book, Artist, Song, Product, Review
 
 
 # 01. Library tasks
@@ -72,6 +72,8 @@ def remove_song_from_artist(artist_name: str, song_title: str):
 
     artist.songs.remove(song)
 
+
+# Test code:
 # Create artists
 # artist1 = Artist.objects.create(name="Daniel Di Angelo")
 # artist2 = Artist.objects.create(name="Indila")
@@ -98,4 +100,52 @@ def remove_song_from_artist(artist_name: str, song_title: str):
 # songs = get_songs_by_artist("Daniel Di Angelo")
 
 # for song in songs:
-    # print(f"Songs by Daniel Di Angelo after removal: {song.title}")
+# print(f"Songs by Daniel Di Angelo after removal: {song.title}")
+
+
+# 03. Shop task
+# -------------
+def calculate_average_rating_for_product_by_name(product_name: str):
+    product = Product.objects.get(name=product_name)
+    reviews = product.reviews.all()
+    average_rating = sum(review.rating for review in reviews) / len(reviews)
+
+    return average_rating
+
+
+def get_reviews_with_high_ratings(threshold: int):
+    return Review.objects.filter(rating__gte=threshold)
+
+
+def get_products_with_no_reviews():
+    products_with_no_reviews = Product.objects.filter(reviews__isnull=True).order_by('-name')
+
+    return products_with_no_reviews
+
+
+def delete_products_without_reviews():
+    Product.objects.filter(reviews__isnull=True).delete()
+
+
+# Create some products
+# product1 = Product.objects.create(name="Laptop")
+# product2 = Product.objects.create(name="Smartphone")
+# product3 = Product.objects.create(name="Headphones")
+# product4 = Product.objects.create(name="PlayStation 5")
+
+# Create some reviews for products
+# review1 = Review.objects.create(description="Great laptop!", rating=5, product=product1)
+# review2 = Review.objects.create(description="The laptop is slow!", rating=2, product=product1)
+# review3 = Review.objects.create(description="Awesome smartphone!", rating=5, product=product2)
+
+# Run the function to get products without reviews
+# products_without_reviews = get_products_with_no_reviews()
+# print(f"Products without reviews: {', '.join([p.name for p in products_without_reviews])}")
+
+# Run the function to delete products without reviews
+# delete_products_without_reviews()
+# print(f"Products left: {Product.objects.count()}")
+
+# Calculate and print the average rating
+# print(calculate_average_rating_for_product_by_name("Laptop"))
+
