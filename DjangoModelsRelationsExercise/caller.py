@@ -1,11 +1,14 @@
 import os
+from datetime import date, timedelta, datetime
+
 import django
 
 # Set up Django
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "orm_skeleton.settings")
 django.setup()
 
-from main_app.models import Author, Book, Artist, Song, Product, Review
+from main_app.models import Author, Book, Artist, Song, Product, Review, DrivingLicense, Driver, Owner, Car, \
+    Registration
 
 
 # 01. Library tasks
@@ -127,6 +130,7 @@ def delete_products_without_reviews():
     Product.objects.filter(reviews__isnull=True).delete()
 
 
+# Test code:
 # Create some products
 # product1 = Product.objects.create(name="Laptop")
 # product2 = Product.objects.create(name="Smartphone")
@@ -149,3 +153,70 @@ def delete_products_without_reviews():
 # Calculate and print the average rating
 # print(calculate_average_rating_for_product_by_name("Laptop"))
 
+# 04. License task
+# ----------------
+def calculate_licenses_expiration_dates():
+    result = []
+    driving_licenses = DrivingLicense.objects.all().order_by('-license_number')
+
+    for driving_license in driving_licenses:
+        exp_date = driving_license.issue_date + timedelta(days=365)
+        result.append(f"License with id: {driving_license.license_number} expires on {exp_date}!")
+
+    return '\n'.join(result)
+
+
+def get_drivers_with_expired_licenses(due_date):
+    drivers_with_exp_licenses = Driver.objects.filter(
+        drivinglicense__issue_date__gt=due_date - timedelta(days=365)
+    )
+
+    return drivers_with_exp_licenses
+
+# Test code:
+# Create drivers
+# driver1 = Driver.objects.create(first_name="Tanya", last_name="Petrova")
+# driver2 = Driver.objects.create(first_name="Ivan", last_name="Yordanov")
+
+# Create licenses associated with drivers
+# license1 = DrivingLicense.objects.create(license_number="123", issue_date=date(2022, 10, 6), driver=driver1)
+# license2 = DrivingLicense.objects.create(license_number="456", issue_date=date(2022, 1, 1), driver=driver2)
+
+# Get drivers with expired licenses
+# drivers_with_expired_licenses = get_drivers_with_expired_licenses(date(2023, 1, 1))
+# for driver in drivers_with_expired_licenses:
+#     print(f"{driver.first_name} {driver.last_name} has to renew their driving license!")
+
+
+# 05. Car Registration tasks
+# --------------------------
+def register_car_by_owner(owner: Owner):
+    registration = Registration.objects.filter(car__isnull=True).first()
+    car = Car.objects.filter(registration__isnull=True).first()
+
+    car.registration = registration
+    car.owner = owner
+    car.save()
+
+    registration.registration_date = datetime.today()
+    registration.save()
+
+    return f"Successfully registered {car.model} to {owner.name} with registration number {registration.registration_number}."
+
+
+
+
+# Test code:
+# Create instances of the Owner model
+# owner1 = Owner.objects.create(name='Ivelin Milchev')
+# owner2 = Owner.objects.create(name='Alice Smith')
+
+# Create instances of the Car model and associate them with owners
+# car1 = Car.objects.create(model='Citroen C5', year=2004)
+# car2 = Car.objects.create(model='Honda Civic', year=2021)
+
+# Create instances of the Registration model for the cars
+# registration1 = Registration.objects.create(registration_number='TX0044XA')
+# registration2 = Registration.objects.create(registration_number='XYZ789')
+#
+# print(register_car_by_owner(owner1))
