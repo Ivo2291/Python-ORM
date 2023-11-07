@@ -1,4 +1,6 @@
 import os
+from datetime import date, timedelta
+
 import django
 
 # Set up Django
@@ -26,7 +28,7 @@ from main_app.models import Animal, Mammal, Bird, Reptile, ZooKeeper, Veterinari
 # for animal in animals:
 #     print(f"{animal.name} is {animal.species}.")
 
-# 02. Zoo Employees -> Test code:
+# 02. Zoo Employees task -> Test code:
 # ------------------------------
 # zookeeper = ZooKeeper.objects.create(
 #     first_name="Peter", last_name="Johnson", phone_number="0899524265", specialty="Mammals"
@@ -43,7 +45,7 @@ from main_app.models import Animal, Mammal, Bird, Reptile, ZooKeeper, Veterinari
 # veterinarian_from_db = Veterinarian.objects.first()
 # print(f"{veterinarian_from_db.first_name} {veterinarian_from_db.last_name} is a Veterinarian.")
 
-# 03. Animal Display System -> Test code:
+# 03. Animal Display System task -> Test code:
 # --------------------------------------
 # is_proxy = ZooDisplayAnimal._meta.proxy
 #
@@ -52,12 +54,37 @@ from main_app.models import Animal, Mammal, Bird, Reptile, ZooKeeper, Veterinari
 # else:
 #     print("ZooDisplayAnimal is not a proxy model.")
 
-# 04. Zookeeper's Specialty -> Test code:
+# 04. Zookeeper's Specialty task -> Test code:
 # --------------------------------------
 # zookeeper = ZooKeeper(first_name="John", last_name="Doe", phone_number="0123456789", specialty="Fishes")
 # zookeeper.full_clean()
 # zookeeper.save() -> raises a ValidationError!
 
-# 05. Animal Display System Logic -> Test code:
+# 05. Animal Display System Logic task -> Test code:
 # --------------------------------------------
+# all_animals_info = ZooDisplayAnimal.objects.all()
+# for animal in all_animals_info:
+#     print(animal.display_info())
+#     print(animal.is_endangered())
 
+# 06. Animal's Age task -> Test code:
+# ----------------------------------
+# lion_birth_date = date.today() - timedelta(days=731)
+# lion = Mammal.objects.create(
+# name="Simba", species="Lion", birth_date=lion_birth_date, sound="Roar", fur_color="Golden"
+# )
+# print(f"The lion's age is {lion.age}.")
+
+# snake_birth_date = date.today() - timedelta(days=30)
+# snake = Reptile.objects.create(
+# name="Kaa", species="Python", birth_date=snake_birth_date, sound="Hiss", scale_type="Scales"
+# )
+# print(f"The snake's age is {snake.age}.")
+
+# 07. Veterinarian Availability task -> Test code:
+# -----------------------------------------------
+# vet1 = Veterinarian.objects.create(first_name="John", last_name="Doe", phone_number="0896625120", license_number="VET123", availability=False)
+# print(vet1.is_available())
+#
+# vet2 = Veterinarian.objects.create(first_name="Alice", last_name="Johnson", phone_number="0896529728", license_number="VET789")
+# print(vet2.is_available())

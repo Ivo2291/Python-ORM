@@ -1,5 +1,19 @@
+from datetime import datetime
+
 from django.db import models
 from django.core.exceptions import ValidationError
+
+
+class BooleanChoiceField(models.BooleanField):
+    def __init__(self, *args, **kwargs):
+        kwargs['choices'] = (
+            (True, 'Available'),
+            (False, 'Not Available'),
+        )
+
+        kwargs['default'] = True
+
+        super().__init__(*args, **kwargs)
 
 
 class Animal(models.Model):
@@ -16,6 +30,15 @@ class Animal(models.Model):
     sound = models.CharField(
         max_length=100,
     )
+
+    @property
+    def age(self):
+        today = datetime.today()
+        age = today.year - self.birth_date.year - (
+                (self.birth_date.month, self.birth_date.day) > (today.month, today.day)
+        )
+
+        return age
 
 
 class Mammal(Animal):
@@ -38,7 +61,6 @@ class Reptile(Animal):
 
 
 class Employee(models.Model):
-
     first_name = models.CharField(
         max_length=50,
     )
@@ -91,10 +113,38 @@ class Veterinarian(Employee):
         max_length=10,
     )
 
+    availability = BooleanChoiceField()
+
+    def is_available(self):
+        return self.availability
+
 
 class ZooDisplayAnimal(Animal):
+    def __extra_info(self):
+        extra_info = ''
+
+        if hasattr(self, 'mammal'):
+            extra_info = f" Its fur color is {self.mammal.fur_color}."
+
+        if hasattr(self, 'bird'):
+            extra_info = f" Its wingspan is {self.bird.wing_span} cm."
+
+        if hasattr(self, 'reptile'):
+            extra_info = f" Its scale type is {self.reptile.scale_type}."
+
+        return extra_info
+
+    def display_info(self):
+        return f"Meet {self.name}! It's {self.species} and it's born {self.birth_date}. " \
+               f"It makes a noise like '{self.sound}'!{self.__extra_info()}"
+
+    def is_endangered(self):
+        extincting_animals = ["Cross River Gorilla", "Orangutan", "Green Turtle"]
+
+        if self.species in extincting_animals:
+            return True
+
+        return False
+
     class Meta:
         proxy = True
-
-
-
