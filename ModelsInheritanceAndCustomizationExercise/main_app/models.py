@@ -257,3 +257,5 @@ class BaseReservation(models.Model):
         return total_cost
 
 
+class RegularReservation(BaseReservation):
+    pass
