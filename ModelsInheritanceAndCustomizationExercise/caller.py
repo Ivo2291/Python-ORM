@@ -5,7 +5,7 @@ import django
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "orm_skeleton.settings")
 django.setup()
 
-from main_app.models import Mage, Necromancer, UserProfile, Message
+from main_app.models import Mage, Necromancer, UserProfile, Message, Student, CreditCard
 
 # 01. Character Classes task -> Test code:
 # ---------------------------------------
@@ -58,3 +58,46 @@ from main_app.models import Mage, Necromancer, UserProfile, Message
 # Create a forwarded message from user2 to user3
 # forwarded_message = message1.forward_message(sender=user2, receiver=user3)
 # print(f"Forwarded message from {forwarded_message.sender.username} to {forwarded_message.receiver.username}")
+
+# 03. Student Information task -> Test code:
+# -----------------------------------------
+# student1 = Student(name="John", student_id=12345)
+# student1.save()
+#
+# student2 = Student(name="Alice", student_id=45.23)
+# student2.save()
+#
+# student3 = Student(name="Bob", student_id="555")
+# student3.save()
+
+# Retrieving student IDs from the database
+# retrieved_student1 = Student.objects.get(name="John")
+# retrieved_student2 = Student.objects.get(name="Alice")
+# retrieved_student3 = Student.objects.get(name="Bob")
+#
+# print(retrieved_student1.student_id)
+# print(retrieved_student2.student_id)
+# print(retrieved_student3.student_id)
+
+# 04. Credit Card Masking task -> Test code:
+# -----------------------------------------
+# Create CreditCard instances with card owner names and card numbers
+# credit_card1 = CreditCard.objects.create(card_owner="Krasimir", card_number="1234567890123450")
+# credit_card2 = CreditCard.objects.create(card_owner="Pesho", card_number="9876543210987654")
+# credit_card3 = CreditCard.objects.create(card_owner="Vankata", card_number="4567890123456789")
+
+# Save the instances to the database
+# credit_card1.save()
+# credit_card2.save()
+# credit_card3.save()
+
+# Retrieve the CreditCard instances from the database
+# credit_cards = CreditCard.objects.all()
+
+# Display the card owner names and masked card numbers
+# for credit_card in credit_cards:
+#     print(f"Card Owner: {credit_card.card_owner}")
+#     print(f"Card Number: {credit_card.card_number}")
+
+# 05. Hotel Reservation System task -> Test code:
+# ----------------------------------------------
