@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from django.core.exceptions import ValidationError
 from django.db import models
 
@@ -252,10 +254,56 @@ class BaseReservation(models.Model):
         return (self.end_date - self.start_date).days
 
     def calculate_total_cost(self):
-        total_cost = f"{self.reservation_period() * self.room.price_per_night:.1f}"
+        total_cost = round(self.reservation_period() * self.room.price_per_night, 1)
 
         return total_cost
 
+    @property
+    def is_available(self):
+        reservation = self.__class__.objects.filter(
+            room=self.room,
+            start_date__lte=self.end_date,
+            end_date__gte=self.start_date,
+        )
+
+        return not reservation.exists()
+
+    def clean(self):
+        if self.start_date >= self.end_date:
+            raise ValidationError('Start date cannot be after or in the same end date')
+
+        if not self.is_available:
+            raise ValidationError(f'Room {self.room.number} cannot be reserved')
+
 
 class RegularReservation(BaseReservation):
-    pass
+    def save(self, *args, **kwargs):
+        super().clean()
+
+        super().save(*args, **kwargs)
+
+        return f'Regular reservation for room {self.room.number}'
+
+
+class SpecialReservation(BaseReservation):
+    def save(self, *args, **kwargs):
+        super().clean()
+
+        super().save(*args, **kwargs)
+
+        return f'Special reservation for room {self.room.number}'
+
+    def extend_reservation(self, days: int):
+        reservation = SpecialReservation.objects.filter(
+            room=self.room,
+            start_date__lte=self.end_date + timedelta(days=3),
+            end_date__gte=self.start_date,
+        )
+
+        if reservation:
+            raise ValidationError('Error during extending reservation')
+
+        self.end_date += timedelta(days=days)
+        self.save()
+
+        return f'Extended reservation for room {self.room.number} with {days} days'
