@@ -44,10 +44,89 @@ class Menu(models.Model):
     description = models.TextField(
         validators=[
             validate_menu_categories,
-        ]
+        ],
     )
 
     restaurant = models.ForeignKey(
         to='Restaurant',
         on_delete=models.CASCADE,
     )
+
+
+class RestaurantReview(models.Model):
+    reviewer_name = models.CharField(
+        max_length=100,
+    )
+
+    restaurant = models.ForeignKey(
+        to='Restaurant',
+        on_delete=models.CASCADE,
+    )
+
+    review_content = models.TextField()
+
+    rating = models.PositiveIntegerField(
+        validators=[
+            validators.MaxValueValidator(5)
+        ]
+    )
+
+    class Meta:
+        abstract = True
+
+        ordering = ['-rating']
+
+        verbose_name = 'Restaurant Review'
+
+        verbose_name_plural = 'Restaurant Reviews'
+
+        unique_together = ['reviewer_name', 'restaurant']
+
+
+class RegularRestaurantReview(RestaurantReview):
+    pass
+
+
+class FoodCriticRestaurantReview(RestaurantReview):
+    food_critic_cuisine_area = models.CharField(
+        max_length=100,
+    )
+
+    class Meta(RestaurantReview.Meta):
+        verbose_name = 'Food Critic Review'
+
+        verbose_name_plural = 'Food Critic Reviews'
+
+
+class MenuReview(models.Model):
+    reviewer_name = models.CharField(
+        max_length=100,
+    )
+
+    menu = models.ForeignKey(
+        to='Menu',
+        on_delete=models.CASCADE,
+    )
+
+    review_content = models.TextField()
+
+    rating = models.PositiveIntegerField(
+        validators=[
+            validators.MaxLengthValidator(5),
+        ],
+    )
+
+    class Meta:
+        ordering = ['-rating']
+
+        verbose_name = 'Menu Review'
+
+        verbose_name_plural = 'Menu Reviews'
+
+        unique_together = ['reviewer_name', 'menu']
+
+        indexes = [
+            models.Index(
+                fields=['menu'], name='main_app_menu_review_menu_id'
+            ),
+        ]
