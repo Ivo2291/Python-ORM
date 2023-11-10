@@ -4,6 +4,25 @@ from django.db import models
 from main_app.validators import validate_menu_categories
 
 
+class ReviewMixin(models.Model):
+    reviewer_name = models.CharField(
+        max_length=100,
+    )
+
+    review_content = models.TextField()
+
+    rating = models.PositiveIntegerField(
+        validators=[
+            validators.MaxValueValidator(5)
+        ]
+    )
+
+    class Meta:
+        abstract = True
+
+        ordering = ['-rating']
+
+
 class Restaurant(models.Model):
     name = models.CharField(
         max_length=100,
@@ -53,28 +72,14 @@ class Menu(models.Model):
     )
 
 
-class RestaurantReview(models.Model):
-    reviewer_name = models.CharField(
-        max_length=100,
-    )
-
+class RestaurantReview(ReviewMixin):
     restaurant = models.ForeignKey(
         to='Restaurant',
         on_delete=models.CASCADE,
     )
 
-    review_content = models.TextField()
-
-    rating = models.PositiveIntegerField(
-        validators=[
-            validators.MaxValueValidator(5)
-        ]
-    )
-
-    class Meta:
+    class Meta(ReviewMixin.Meta):
         abstract = True
-
-        ordering = ['-rating']
 
         verbose_name = 'Restaurant Review'
 
@@ -98,26 +103,13 @@ class FoodCriticRestaurantReview(RestaurantReview):
         verbose_name_plural = 'Food Critic Reviews'
 
 
-class MenuReview(models.Model):
-    reviewer_name = models.CharField(
-        max_length=100,
-    )
-
+class MenuReview(ReviewMixin):
     menu = models.ForeignKey(
         to='Menu',
         on_delete=models.CASCADE,
     )
 
-    review_content = models.TextField()
-
-    rating = models.PositiveIntegerField(
-        validators=[
-            validators.MaxLengthValidator(5),
-        ],
-    )
-
-    class Meta:
-        ordering = ['-rating']
+    class Meta(ReviewMixin.Meta):
 
         verbose_name = 'Menu Review'
 
