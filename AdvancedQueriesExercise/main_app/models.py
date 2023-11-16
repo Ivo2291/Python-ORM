@@ -1,4 +1,7 @@
+from datetime import timedelta
+
 from django.db import models
+from django.db.models import Q, F
 
 from main_app.managers import RealEstateListingManager, VideoGameManager
 from main_app.validators import video_game_rating_validator, video_game_release_year_validator
@@ -101,19 +104,41 @@ class Invoice(models.Model):
 
 
 class Technology(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(
+        max_length=100,
+    )
+
     description = models.TextField()
 
 
 class Project(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(
+        max_length=100,
+    )
+
     description = models.TextField()
-    technologies_used = models.ManyToManyField(Technology, related_name='projects')
+
+    technologies_used = models.ManyToManyField(
+        Technology,
+        related_name='projects',
+    )
+
+    def get_programmers_with_technologies(self):
+        return self.programmers.prefetch_related('projects__technologies_used')
 
 
 class Programmer(models.Model):
-    name = models.CharField(max_length=100)
-    projects = models.ManyToManyField(Project, related_name='programmers')
+    name = models.CharField(
+        max_length=100,
+    )
+
+    projects = models.ManyToManyField(
+        Project,
+        related_name='programmers',
+    )
+
+    def get_projects_with_technologies(self):
+        return self.projects.prefetch_related('technologies_used')
 
 
 class Task(models.Model):
@@ -123,12 +148,47 @@ class Task(models.Model):
         ('High', 'High')
     )
 
-    title = models.CharField(max_length=200)
+    title = models.CharField(
+        max_length=200,
+    )
+
     description = models.TextField()
-    priority = models.CharField(max_length=20, choices=PRIORITIES)
-    is_completed = models.BooleanField(default=False)
+
+    priority = models.CharField(
+        max_length=20,
+        choices=PRIORITIES,
+    )
+
+    is_completed = models.BooleanField(
+        default=False,
+    )
+
     creation_date = models.DateField()
+
     completion_date = models.DateField()
+
+    @classmethod
+    def overdue_high_priority_tasks(cls):
+        query = Q(priority='High') & Q(is_completed=False) & Q(completion_date__gt=F('creation_date'))
+
+        return cls.objects.filter(query)
+
+    @classmethod
+    def completed_mid_priority_tasks(cls):
+        query = Q(priority='Medium') & Q(is_completed=True)
+
+        return cls.objects.filter(query)
+
+    @classmethod
+    def search_tasks(cls, query: str):
+        query = Q(title__contains=query) | Q(description__contains=query)
+
+        return cls.objects.filter(query)
+
+    def recent_completed_tasks(self, days: int):
+        query = Q(is_completed=True) & Q(completion_date__gte=self.creation_date - timedelta(days=days))
+
+        return Task.objects.filter(query)
 
 
 class Exercise(models.Model):
