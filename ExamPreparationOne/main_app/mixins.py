@@ -22,6 +22,9 @@ class PersonInfo(models.Model):
         default='Unknown',
     )
 
+    def __str__(self):
+        return f"Name: {self.full_name}"
+
 
 class AwardedInfo(models.Model):
     class Meta:
@@ -36,6 +39,6 @@ class LastUpdate(models.Model):
     class Meta:
         abstract = True
 
-    last_updated = models.DateField(
+    last_updated = models.DateTimeField(
         auto_now=True,
     )

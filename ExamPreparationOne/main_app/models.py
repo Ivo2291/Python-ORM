@@ -1,6 +1,7 @@
 from django.core import validators
 from django.db import models
 
+from main_app.managers import DirectorManager
 from main_app.mixins import PersonInfo, AwardedInfo, LastUpdate
 
 
@@ -11,6 +12,8 @@ class Director(PersonInfo):
         ],
         default=0,
     )
+
+    objects = DirectorManager()
 
 
 class Actor(PersonInfo, AwardedInfo, LastUpdate):
