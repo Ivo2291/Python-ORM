@@ -5,8 +5,8 @@ import django
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "orm_skeleton.settings")
 django.setup()
 
-from main_app.models import Director, Actor
-from django.db.models import Q, Count, Avg
+from main_app.models import Director, Actor, Movie
+from django.db.models import Q, F, Count, Avg, Max
 
 
 # print(Director.objects.get_directors_by_movies_count())
@@ -52,9 +52,9 @@ def get_top_director():
 # print(get_top_director())
 
 def get_top_actor():
-    top_actor = Actor.objects.prefetch_related('starring_movies')\
-        .annotate(starring_movies_count=Count('starring_movies'), avg_rating=Avg('starring_movies__rating'))\
-        .order_by('-starring_movies_count', 'full_name')\
+    top_actor = Actor.objects.prefetch_related('starring_movies') \
+        .annotate(starring_movies_count=Count('starring_movies'), avg_rating=Avg('starring_movies__rating')) \
+        .order_by('-starring_movies_count', 'full_name') \
         .first()
 
     if not top_actor or not top_actor.starring_movies_count:
@@ -67,3 +67,52 @@ def get_top_actor():
 
 
 # print(get_top_actor())
+
+
+def get_actors_by_movies_count():
+    if Movie.objects.all().count() == 0:
+        return ''
+
+    top_three_actors = Actor.objects.prefetch_related('movies') \
+                           .annotate(movies_count=Count('movies')) \
+                           .order_by('-movies_count', 'full_name')[:3]
+
+    if not top_three_actors:
+        return ''
+
+    result = [f"{actor.full_name}, participated in {actor.movies_count} movies" for actor in top_three_actors]
+
+    return '\n'.join(result)
+
+
+# print(get_actors_by_movies_count())
+
+def get_top_rated_awarded_movie():
+    top_movie = Movie.objects.select_related('starring_actor') \
+        .prefetch_related('actors') \
+        .filter(is_awarded=True) \
+        .order_by('-rating', 'title') \
+        .first()
+
+    if not top_movie:
+        return ''
+
+    starring_actor = top_movie.starring_actor.full_name if top_movie.starring_actor else 'N/A'
+    cast = ', '.join([actor.full_name for actor in top_movie.actors.all().order_by('full_name')])
+
+    return f"Top rated awarded movie: {top_movie.title}, rating: {top_movie.rating:.1f}. " \
+           f"Starring actor: {starring_actor}. Cast: {cast}."
+
+
+# print(get_top_rated_awarded_movie())
+
+
+def increase_rating():
+    updated_movies = Movie.objects.filter(rating__lt=10.0, is_classic=True).update(rating=F('rating') + 0.1)
+
+    if updated_movies == 0:
+        return f"No ratings increased."
+
+    return f"Rating increased for {updated_movies} movies."
+
+# print(increase_rating())
