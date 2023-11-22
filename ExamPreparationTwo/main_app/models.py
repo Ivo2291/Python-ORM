@@ -1,6 +1,7 @@
 from django.core import validators
 from django.db import models
 
+from main_app.managers import ProfileManager
 from main_app.mixins import CreationDateTimeMixin
 
 
@@ -23,6 +24,12 @@ class Profile(CreationDateTimeMixin):
     is_active = models.BooleanField(
         default=True,
     )
+
+    objects = ProfileManager()
+
+    def __str__(self):
+        return f"{self.full_name}"
+
 
 class Product(CreationDateTimeMixin):
     name = models.CharField(
@@ -48,6 +55,9 @@ class Product(CreationDateTimeMixin):
     is_available = models.BooleanField(
         default=True,
     )
+
+    def __str__(self):
+        return f"{self.name}"
 
 
 class Order(CreationDateTimeMixin):
